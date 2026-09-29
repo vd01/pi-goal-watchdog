@@ -114,6 +114,68 @@ Infrastructure pause reasons that are auto-resumable: `Previous autonomous execu
 - `/goal-watchdog` 查看配置与巡检结果；`interval <秒>` 可改本会话巡检周期。
 - 默认只动"本会话拥有且已 focus"的 goal；用户主动暂停（`stopReason: user`）、`blocked`、预算耗尽**永不**自动恢复。
 - 注意成本：wake 会花一次模型回合并绕过 wait 的剩余检查次数；`/goal-resume` 会重置自动续跑额度。
+- 开发/部署（符号链接安装、不花模型调用的冒烟测试、无 `ssh` 的极简主机）见下面 **Development** 一节。
+
+## Development
+
+### Layout
+
+```text
+pi-goal-watchdog/
+├── extensions/goal-watchdog.ts   # the whole extension (single file, no build step)
+├── examples/pi-goal-watchdog.json
+└── package.json                  # pi manifest: pi.extensions
+```
+
+### Install from a working copy (no drift)
+
+Point your user extensions directory at the checkout so edits are live and the
+installed copy cannot drift from the repository:
+
+```bash
+ln -sfn "$PWD/extensions/goal-watchdog.ts" ~/.pi/agent/extensions/goal-watchdog.ts
+```
+
+pi's extension discovery follows symlinked files (verified on pi 0.87.1: a real
+session with no `-e` flag loads the extension from that directory and
+`/goal-watchdog` answers with `dog: on`). Run `/reload` after changing code.
+
+### Smoke test without spending a model call
+
+RPC mode dispatches registered extension commands immediately, before any provider
+request, so `/goal-watchdog` can be exercised for free:
+
+```bash
+printf '%s\n' '{"id":"1","type":"prompt","message":"/goal-watchdog"}' \
+  | pi --no-session --no-context-files --no-skills --no-prompt-templates --mode rpc
+```
+
+Expected: an `extension_ui_request` with `"statusText":"dog: on"`, and a `notify`
+carrying the scan report. Add `--no-extensions -e <path>` to load only this
+extension in isolation, and run it from a throwaway directory so the scan sees an
+empty goal pool.
+
+Because the watchdog never writes to the goal pool, a scan is safe to run even
+while a real goal is active. It only acts when a goal is `paused` with an
+infrastructure reason, `active` but idle past the threshold, or `waiting` with no
+producer signal — and only for a goal it owns and that the session has focused.
+
+### Minimal hosts without an ssh binary
+
+Some containers ship `git` but no `ssh`/`ssh-keygen` and no root. You can still push
+over a repository-scoped deploy key by extracting the client from your
+distribution archive — verify the checksum against the `Packages` index before
+trusting it — and then pinning that client for this repository only:
+
+```bash
+git config core.sshCommand \
+  "$HOME/.local/opt/openssh/usr/bin/ssh -i $HOME/.ssh/<deploy-key> -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes"
+```
+
+Do **not** set `core.sshCommand` globally when the key is a per-repository deploy
+key: every other repository would try to authenticate with it and fail. Also
+compare a scanned host key against GitHub's published fingerprints before adding
+it to `known_hosts`.
 
 ## License
 
