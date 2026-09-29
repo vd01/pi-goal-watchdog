@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "pollSeconds": 60,
+  "statusHint": true,
+  "startupNotice": false,
+  "notify": true,
+  "autoWake": true,
+  "autoResume": true,
+  "autoResumeOtherSessions": false,
+  "waitStaleSeconds": 3600,
+  "pausedStaleSeconds": 900,
+  "activeIdleSeconds": 3600,
+  "maxAttemptsPerGoal": 3,
+  "attemptWindowSeconds": 3600,
+  "notifyCooldownSeconds": 1800
+}

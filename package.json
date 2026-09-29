@@ -1,0 +1,43 @@
+{
+  "name": "pi-goal-watchdog",
+  "version": "0.1.0",
+  "description": "Watchdog extension for pi-goal-x: detects goals stuck in paused / waiting / active-idle and recovers them through public interfaces only (pi-goal:wake bus event + /goal-resume command dispatch). No changes to pi-goal-x.",
+  "license": "MIT",
+  "author": "vd01",
+  "type": "module",
+  "keywords": [
+    "pi-package",
+    "pi",
+    "pi-extension",
+    "pi-goal-x",
+    "goal",
+    "watchdog",
+    "autoresume",
+    "long-running"
+  ],
+  "pi": {
+    "extensions": [
+      "extensions/goal-watchdog.ts"
+    ]
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "files": [
+    "extensions",
+    "examples",
+    "README.md",
+    "LICENSE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vd01/pi-goal-watchdog.git"
+  },
+  "homepage": "https://github.com/vd01/pi-goal-watchdog#readme",
+  "bugs": {
+    "url": "https://github.com/vd01/pi-goal-watchdog/issues"
+  }
+}
